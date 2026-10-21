@@ -1,0 +1,70 @@
+<!doctype html>
+<!-- Invite link target: https://wiesiiii.github.io/Game-Night-App-invites/join?code=AB12CD
+     Opens the app (gamenight://join/<code>) if it's installed, else shows the code.
+     Published to the public repo Wiesiiii/Game-Night-App-invites by publish_site.bat. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Night Vote</title>
+<meta property="og:title" content="Join my game night vote">
+<meta property="og:description" content="Vote on what we play tonight in Game Night Picker.">
+<style>
+  :root { --bg:#0e1116; --panel:#161b23; --line:#2a3342; --text:#e7ecf3; --muted:#8b97a8;
+          --accent:#4cc2ff; --accent2:#8b5cf6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px;
+         background: var(--bg); color: var(--text);
+         font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line);
+         border-radius: 14px; padding: 28px 22px; text-align: center; }
+  h1 { font-size: 22px; margin: 0 0 6px; }
+  p { color: var(--muted); margin: 8px 0; }
+  .code { font: 800 38px/1.2 ui-monospace, Consolas, monospace; letter-spacing: 8px; margin: 18px 0 6px;
+          padding-left: 8px; }
+  .btn { display: block; width: 100%; padding: 13px; margin-top: 12px; border-radius: 10px; border: 0;
+         font: 600 16px system-ui, sans-serif; cursor: pointer; text-decoration: none; }
+  .primary { background: linear-gradient(90deg, var(--accent), var(--accent2)); color: #0e1116; }
+  .ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+  .err { color: #ff6b6b; }
+  small { display: block; margin-top: 18px; color: var(--muted); }
+</style>
+</head>
+<body>
+<main id="main">
+  <h1>🎲 Game night vote</h1>
+  <p>You're invited to vote on what we play.</p>
+  <div class="code" id="code">······</div>
+  <a class="btn primary" id="open" href="#">Open in Game Night Picker</a>
+  <button class="btn ghost" id="copy" type="button">Copy code</button>
+  <small>Nothing happens? Open Game Night Picker, tap “Votes” and enter the code.
+    Don't have the app? Ask whoever sent you this link.</small>
+</main>
+<script>
+  const q = new URLSearchParams(location.search);
+  const code = (q.get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (code.length !== 6) {
+    document.getElementById('main').innerHTML =
+      '<h1>🎲 Game night vote</h1><p class="err">This invite link is incomplete - ask for a new one.</p>';
+  } else {
+    document.getElementById('code').textContent = code;
+    const android = /Android/i.test(navigator.userAgent);
+    const deep = 'gamenight://join/' + code;
+    // Android: an intent link opens the app directly; without the app Chrome comes back here.
+    const back = location.href.split('#')[0] + (q.has('app') ? '' : '&app=0');
+    const href = android
+      ? 'intent://join/' + code + '#Intent;scheme=gamenight;package=at.gamenight.game_night;' +
+        'S.browser_fallback_url=' + encodeURIComponent(back) + ';end'
+      : deep;
+    document.getElementById('open').href = href;
+    if (android && !q.has('app')) location.href = href;
+
+    const copy = document.getElementById('copy');
+    copy.onclick = async () => {
+      try { await navigator.clipboard.writeText(code); copy.textContent = 'Copied ✓'; }
+      catch { copy.textContent = code; }
+    };
+  }
+</script>
+</body>
+</html>
