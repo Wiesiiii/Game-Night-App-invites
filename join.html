@@ -36,9 +36,10 @@
   <p>You're invited to vote on what we play.</p>
   <div class="code" id="code">······</div>
   <a class="btn primary" id="open" href="#">Open in Game Night Picker</a>
+  <a class="btn ghost" id="web" href="#">Vote in the browser</a>
   <button class="btn ghost" id="copy" type="button">Copy code</button>
-  <small>Nothing happens? Open Game Night Picker, tap “Votes” and enter the code.
-    Don't have the app? Ask whoever sent you this link.</small>
+  <small id="hint">Nothing happens? Open Game Night Picker, tap “Votes” and enter the code -
+    or just vote in the browser.</small>
 </main>
 <script>
   const q = new URLSearchParams(location.search);
@@ -56,7 +57,21 @@
       ? 'intent://join/' + code + '#Intent;scheme=gamenight;package=at.gamenight.game_night;' +
         'S.browser_fallback_url=' + encodeURIComponent(back) + ';end'
       : deep;
-    document.getElementById('open').href = href;
+    const open = document.getElementById('open'), web = document.getElementById('web');
+    open.href = href;
+    web.href = 'app/?code=' + code;
+    // iPhone/iPad: there's no app, the web version is the way in. Android back from a
+    // failed app start (app=0): the app isn't installed, so lead with the browser too.
+    const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (ios) {
+      open.remove();
+      document.getElementById('hint').remove();
+    }
+    if (ios || q.get('app') === '0') {
+      web.className = 'btn primary';
+      if (!ios) { open.className = 'btn ghost'; open.before(web); }
+    }
     if (android && !q.has('app')) location.href = href;
 
     const copy = document.getElementById('copy');
